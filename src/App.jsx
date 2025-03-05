@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 export default function App() {
@@ -8,7 +8,21 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioURL, setAudioURL] = useState(null);
+  const [previousTranscriptions, setPreviousTranscriptions] = useState([]); // New state to store past transcriptions
   const audioRef = useRef(null);
+
+  useEffect(() => {
+    fetchPreviousTranscriptions(); // Fetch previous transcriptions when the component mounts
+  }, []);
+
+  const fetchPreviousTranscriptions = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/transcriptions");
+      setPreviousTranscriptions(response.data);
+    } catch (error) {
+      console.error("Error fetching transcriptions:", error);
+    }
+  };
 
   const handleFileChange = (e) => setFile(e.target.files[0]);
 
@@ -25,6 +39,7 @@ export default function App() {
       });
 
       setTranscription(response.data.transcription);
+      fetchPreviousTranscriptions(); // Refresh transcription list
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to transcribe audio");
@@ -74,6 +89,7 @@ export default function App() {
       });
 
       setTranscription(response.data.transcription);
+      fetchPreviousTranscriptions(); // Refresh transcription list
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to transcribe recorded audio");
@@ -84,16 +100,12 @@ export default function App() {
 
   return (
     <div className="w-screen h-screen flex flex-col bg-gradient-to-r from-blue-500 to-purple-500 p-6">
-      {/* Full-width Header */}
       <h1 className="text-3xl font-bold text-white text-center w-full py-4 bg-black/30">
         🎙️ Speech-to-Text Transcription
       </h1>
 
-      {/* Main Content Layout */}
       <div className="flex flex-col md:flex-row w-full h-full items-start justify-start mt-6 gap-8">
-        {/* Left Section: Buttons */}
         <div className="w-full md:w-1/2 flex flex-col gap-6">
-          {/* File Upload Section */}
           <div className="bg-white text-black p-6 rounded-xl shadow-lg flex flex-col items-center">
             <h2 className="text-xl font-bold mb-4 text-indigo-600">Upload Audio File</h2>
             <input type="file" onChange={handleFileChange} className="w-full p-2 border rounded-md mb-3" />
@@ -105,7 +117,6 @@ export default function App() {
             </button>
           </div>
 
-          {/* Audio Recording Section */}
           <div className="bg-white text-black p-6 rounded-xl shadow-lg flex flex-col items-center">
             <h2 className="text-xl font-bold mb-4 text-red-500">Record Audio</h2>
             {!mediaRecorder ? (
@@ -127,24 +138,6 @@ export default function App() {
             {audioURL && (
               <div className="mt-4 w-full text-center">
                 <audio ref={audioRef} src={audioURL} controls className="w-full border rounded-md shadow-md"></audio>
-                <div className="mt-3 flex justify-between">
-                  <button
-                    onClick={() => {
-                      setAudioURL(null);
-                      setRecordedAudio(null);
-                    }}
-                    className="bg-gray-500 text-white px-4 py-1 rounded-md hover:bg-gray-600 transition-all"
-                  >
-                    ❌ Delete
-                  </button>
-                  <a
-                    href={audioURL}
-                    download="recorded_audio.wav"
-                    className="bg-blue-500 text-white px-4 py-1 rounded-md hover:bg-blue-600 transition-all"
-                  >
-                    ⬇️ Download
-                  </a>
-                </div>
                 <button
                   onClick={uploadRecordedAudio}
                   className="bg-purple-600 text-white px-4 py-2 rounded-md w-full mt-3 hover:bg-purple-700 transition-all"
@@ -156,18 +149,13 @@ export default function App() {
           </div>
         </div>
 
-        {/* Right Section: Transcription Display */}
         <div className="w-full md:w-1/2 bg-white text-black p-6 rounded-xl shadow-lg flex flex-col justify-start">
           <h2 className="text-2xl font-bold text-indigo-600 text-center mb-3">📝 Transcription Result:</h2>
-
-          {/* Loading Indicator */}
           {loading && (
             <p className="text-lg bg-yellow-300 text-black px-4 py-2 rounded-md shadow-md text-center">
               ⏳ Transcribing audio...
             </p>
           )}
-
-          {/* Transcription Text */}
           <div className="mt-3 p-4 bg-gray-100 rounded-lg shadow-md overflow-y-auto max-h-60 min-h-[150px]">
             {transcription ? (
               <p className="text-lg text-gray-800 leading-relaxed">{transcription}</p>
@@ -175,6 +163,20 @@ export default function App() {
               <p className="text-gray-500 text-center">No transcription available yet.</p>
             )}
           </div>
+
+          {/* Display previous transcriptions */}
+          <h2 className="text-xl font-bold text-indigo-600 mt-6">📜 Previous Transcriptions:</h2>
+          <ul className="mt-3 p-4 bg-gray-50 rounded-lg shadow-md overflow-y-auto max-h-60">
+            {previousTranscriptions.length > 0 ? (
+              previousTranscriptions.map((item, index) => (
+                <li key={index} className="p-2 border-b border-gray-300 last:border-none">
+                  {item.transcription}
+                </li>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center">No previous transcriptions found.</p>
+            )}
+          </ul>
         </div>
       </div>
     </div>
