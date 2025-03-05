@@ -8,11 +8,11 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioURL, setAudioURL] = useState(null);
-  const [previousTranscriptions, setPreviousTranscriptions] = useState([]); // New state to store past transcriptions
+  const [previousTranscriptions, setPreviousTranscriptions] = useState([]);
   const audioRef = useRef(null);
 
   useEffect(() => {
-    fetchPreviousTranscriptions(); // Fetch previous transcriptions when the component mounts
+    fetchPreviousTranscriptions();
   }, []);
 
   const fetchPreviousTranscriptions = async () => {
@@ -39,7 +39,7 @@ export default function App() {
       });
 
       setTranscription(response.data.transcription);
-      fetchPreviousTranscriptions(); // Refresh transcription list
+      fetchPreviousTranscriptions();
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to transcribe audio");
@@ -89,7 +89,7 @@ export default function App() {
       });
 
       setTranscription(response.data.transcription);
-      fetchPreviousTranscriptions(); // Refresh transcription list
+      fetchPreviousTranscriptions();
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to transcribe recorded audio");
@@ -98,85 +98,106 @@ export default function App() {
     }
   };
 
+  const deleteTranscription = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/transcriptions/${id}`);
+      fetchPreviousTranscriptions();
+    } catch (error) {
+      console.error("Error deleting transcription:", error);
+    }
+  };
+
+  const clearAllTranscriptions = async () => {
+    try {
+      await axios.delete("http://localhost:5000/transcriptions");
+      setPreviousTranscriptions([]);
+    } catch (error) {
+      console.error("Error clearing transcriptions:", error);
+    }
+  };
+
   return (
-    <div className="w-screen h-screen flex flex-col bg-gradient-to-r from-blue-500 to-purple-500 p-6">
-      <h1 className="text-3xl font-bold text-white text-center w-full py-4 bg-black/30">
+    <div className="w-screen h-screen flex flex-col bg-gradient-to-br from-indigo-800 to-purple-700 p-6">
+      <h1 className="text-4xl font-extrabold text-white text-center py-6 bg-black/40 shadow-lg rounded-lg">
         🎙️ Speech-to-Text Transcription
       </h1>
 
-      <div className="flex flex-col md:flex-row w-full h-full items-start justify-start mt-6 gap-8">
-        <div className="w-full md:w-1/2 flex flex-col gap-6">
-          <div className="bg-white text-black p-6 rounded-xl shadow-lg flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-4 text-indigo-600">Upload Audio File</h2>
-            <input type="file" onChange={handleFileChange} className="w-full p-2 border rounded-md mb-3" />
+      <div className="flex flex-col md:flex-row w-full h-full items-start justify-start gap-10 mt-6">
+        {/* Left Panel */}
+        <div className="w-full md:w-1/2 flex flex-col gap-8">
+          {/* Upload Audio */}
+          <div className="bg-white/20 backdrop-blur-lg text-white p-6 rounded-xl shadow-lg flex flex-col items-center gap-4">
+            <h2 className="text-2xl font-semibold">Upload Audio File</h2>
+            <input type="file" onChange={handleFileChange} className="w-full p-2 border rounded-md bg-white text-black" />
             <button
               onClick={uploadFile}
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-all"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg shadow-md hover:scale-105 transition-all duration-300"
             >
-              Upload & Transcribe
+              🚀 Upload & Transcribe
             </button>
           </div>
 
-          <div className="bg-white text-black p-6 rounded-xl shadow-lg flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-4 text-red-500">Record Audio</h2>
+          {/* Record Audio */}
+          <div className="bg-white/20 backdrop-blur-lg text-white p-6 rounded-xl shadow-lg flex flex-col items-center gap-4">
+            <h2 className="text-2xl font-semibold">Record Audio</h2>
             {!mediaRecorder ? (
               <button
                 onClick={startRecording}
-                className="bg-green-500 text-white px-4 py-2 rounded-md w-full hover:bg-green-600 transition-all"
+                className="bg-green-500 text-white px-6 py-3 rounded-lg w-full shadow-md hover:scale-105 transition-all duration-300"
               >
                 🎤 Start Recording
               </button>
             ) : (
               <button
                 onClick={stopRecording}
-                className="bg-red-500 text-white px-4 py-2 rounded-md w-full hover:bg-red-600 transition-all"
+                className="bg-red-500 text-white px-6 py-3 rounded-lg w-full shadow-md hover:scale-105 transition-all duration-300"
               >
                 ⏹️ Stop Recording
               </button>
             )}
 
             {audioURL && (
-              <div className="mt-4 w-full text-center">
+              <div className="w-full text-center mt-4">
                 <audio ref={audioRef} src={audioURL} controls className="w-full border rounded-md shadow-md"></audio>
                 <button
                   onClick={uploadRecordedAudio}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-md w-full mt-3 hover:bg-purple-700 transition-all"
+                  className="mt-4 bg-purple-500 text-white px-6 py-3 rounded-lg w-full shadow-md hover:scale-105 transition-all duration-300"
                 >
-                  Upload Recorded Audio & Transcribe
+                  📤 Upload & Transcribe
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="w-full md:w-1/2 bg-white text-black p-6 rounded-xl shadow-lg flex flex-col justify-start">
-          <h2 className="text-2xl font-bold text-indigo-600 text-center mb-3">📝 Transcription Result:</h2>
-          {loading && (
-            <p className="text-lg bg-yellow-300 text-black px-4 py-2 rounded-md shadow-md text-center">
-              ⏳ Transcribing audio...
-            </p>
-          )}
-          <div className="mt-3 p-4 bg-gray-100 rounded-lg shadow-md overflow-y-auto max-h-60 min-h-[150px]">
-            {transcription ? (
-              <p className="text-lg text-gray-800 leading-relaxed">{transcription}</p>
-            ) : (
-              <p className="text-gray-500 text-center">No transcription available yet.</p>
-            )}
+        {/* Right Panel */}
+        <div className="w-full md:w-1/2 bg-white/20 backdrop-blur-lg text-white p-6 rounded-xl shadow-lg flex flex-col gap-4">
+          <h2 className="text-3xl font-bold text-center">📝 Transcription Result</h2>
+          {loading && <p className="text-lg bg-yellow-300 text-black px-4 py-2 rounded-md shadow-md text-center">⏳ Transcribing audio...</p>}
+          <div className="p-4 bg-gray-100 text-black rounded-lg shadow-md overflow-y-auto max-h-60 min-h-[150px]">
+            {transcription ? <p className="text-lg leading-relaxed">{transcription}</p> : <p className="text-gray-500 text-center">No transcription available yet.</p>}
           </div>
 
-          {/* Display previous transcriptions */}
-          <h2 className="text-xl font-bold text-indigo-600 mt-6">📜 Previous Transcriptions:</h2>
-          <ul className="mt-3 p-4 bg-gray-50 rounded-lg shadow-md overflow-y-auto max-h-60">
+          {/* Transcription History */}
+          <h2 className="text-xl font-bold text-center mt-4">📜 Previous Transcriptions</h2>
+          <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto">
             {previousTranscriptions.length > 0 ? (
-              previousTranscriptions.map((item, index) => (
-                <li key={index} className="p-2 border-b border-gray-300 last:border-none">
-                  {item.transcription}
-                </li>
+              previousTranscriptions.map((item) => (
+                <div key={item.id} className="p-4 bg-white text-black rounded-lg shadow-md flex justify-between items-center">
+                  <p className="text-lg leading-relaxed">{item.transcription}</p>
+                  <button onClick={() => deleteTranscription(item.id)} className="text-red-500 hover:text-red-700">❌</button>
+                </div>
               ))
             ) : (
               <p className="text-gray-500 text-center">No previous transcriptions found.</p>
             )}
-          </ul>
+          </div>
+          <button
+            onClick={clearAllTranscriptions}
+            className="w-full mt-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-md hover:scale-105 transition-all duration-300"
+          >
+            🗑️ Clear All
+          </button>
         </div>
       </div>
     </div>
