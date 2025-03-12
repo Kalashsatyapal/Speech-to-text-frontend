@@ -217,26 +217,28 @@ export default function App() {
           </div>
         </div>
 
-        {/* Right Panel */}
-        <div className="w-full md:w-1/2 bg-white/20 backdrop-blur-lg text-white p-6 rounded-xl shadow-lg flex flex-col gap-4">
-          <h2 className="text-3xl font-bold text-center">
-            📝 Transcription Result
-          </h2>
-          {loading && (
-            <p className="text-lg bg-yellow-300 text-black px-4 py-2 rounded-md shadow-md text-center">
-              ⏳ Transcribing audio...
-            </p>
-          )}
+       {/* Right Panel */}
+       <div className="w-full md:w-1/2 bg-white/20 backdrop-blur-lg text-white p-6 rounded-xl shadow-lg flex flex-col gap-4">
+          <h2 className="text-3xl font-bold text-center">📝 Transcription Result</h2>
+          {loading && <p className="text-lg bg-yellow-300 text-black px-4 py-2 rounded-md shadow-md text-center">⏳ Transcribing audio...</p>}
           <div className="p-4 bg-gray-100 text-black rounded-lg shadow-md overflow-y-auto max-h-60 min-h-[150px]">
-            {transcription ? (
-              <p className="text-lg leading-relaxed">{transcription}</p>
-            ) : (
-              <p className="text-gray-500 text-center">
-                No transcription available yet.
-              </p>
-            )}
+            {transcription ? <p className="text-lg leading-relaxed">{transcription}</p> : <p className="text-gray-500 text-center">No transcription available yet.</p>}
           </div>
 
+          {/* Transcription History */}
+          <h2 className="text-xl font-bold text-center mt-4">📜 Previous Transcriptions</h2>
+          <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto">
+            {previousTranscriptions.length > 0 ? (
+              previousTranscriptions.map((item) => (
+                <div key={item.id} className="p-4 bg-white text-black rounded-lg shadow-md flex justify-between items-center">
+                  <p className="text-lg leading-relaxed">{item.transcription}</p>
+                  <button onClick={() => deleteTranscription(item.id)} className="text-red-500 hover:text-red-700">❌</button>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center">No previous transcriptions found.</p>
+            )}
+          </div>
           <button
             onClick={clearAllTranscriptions}
             className="w-full mt-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-md hover:scale-105 transition-all duration-300"
