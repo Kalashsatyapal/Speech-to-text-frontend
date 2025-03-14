@@ -23,32 +23,55 @@ export default function App() {
       setPreviousTranscriptions(response.data);
     } catch (error) {
       console.error("Error fetching transcriptions:", error);
+      alert("⚠️ Failed to fetch previous transcriptions. Please try again later.");
     }
   };
 
-  const handleFileChange = (e) => setFile(e.target.files[0]);
+  const validateFile = (file) => {
+    const validTypes = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp3", "audio/x-wav"];
+    console.log("File Type:", file.type); // Debugging
+    if (!validTypes.includes(file.type)) {
+      alert(`⚠️ Invalid file type: ${file.type}. Please upload an MP3, WAV, or OGG file.`);
+      return false;
+    }
+    return true;
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && validateFile(selectedFile)) {
+      setFile(selectedFile);
+    } else {
+      setFile(null);
+    }
+  };
 
   const uploadFile = async () => {
-    if (!file) return alert("Please select an audio file");
-
+    if (!file) return alert("Please select a valid audio file");
+  
     const formData = new FormData();
     formData.append("audio", file);
-
+  
     try {
       setLoading(true);
       const response = await axios.post(
         "http://localhost:5000/transcribe",
         formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
-
+  
       setTranscription(response.data.transcription);
       fetchPreviousTranscriptions();
     } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to transcribe audio");
+      console.error("Upload error:", error);
+  
+      if (error.response) {
+        alert(`⚠️ Server error: ${error.response.data.message || "Failed to transcribe audio"}`);
+      } else if (error.request) {
+        alert("⚠️ No response from the server. Please check your internet connection.");
+      } else {
+        alert("⚠️ An unknown error occurred.");
+      }
     } finally {
       setLoading(false);
     }
@@ -96,29 +119,34 @@ export default function App() {
 
   const uploadRecordedAudio = async () => {
     if (!recordedAudio) return alert("No recorded audio available");
-
+  
     const formData = new FormData();
     formData.append("audio", recordedAudio, "recorded_audio.wav");
-
+  
     try {
       setLoading(true);
       const response = await axios.post(
         "http://localhost:5000/transcribe",
         formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
-
+  
       setTranscription(response.data.transcription);
       fetchPreviousTranscriptions();
     } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to transcribe recorded audio");
+      console.error("Recording upload error:", error);
+  
+      if (error.response) {
+        alert(`⚠️ Server error: ${error.response.data.message || "Failed to transcribe audio"}`);
+      } else if (error.request) {
+        alert("⚠️ No response from the server. Please check your internet connection.");
+      } else {
+        alert("⚠️ An unknown error occurred.");
+      }
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   const deleteTranscription = async (id) => {
     try {
@@ -126,15 +154,7 @@ export default function App() {
       fetchPreviousTranscriptions();
     } catch (error) {
       console.error("Error deleting transcription:", error);
-    }
-  };
-
-  const clearAllTranscriptions = async () => {
-    try {
-      await axios.delete("http://localhost:5000/transcriptions");
-      setPreviousTranscriptions([]);
-    } catch (error) {
-      console.error("Error clearing transcriptions:", error);
+      alert("⚠️ Failed to delete transcription. Please try again.");
     }
   };
 
@@ -239,12 +259,6 @@ export default function App() {
               <p className="text-gray-500 text-center">No previous transcriptions found.</p>
             )}
           </div>
-          <button
-            onClick={clearAllTranscriptions}
-            className="w-full mt-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-md hover:scale-105 transition-all duration-300"
-          >
-            🗑️ Clear All
-          </button>
         </div>
       </div>
     </div>
