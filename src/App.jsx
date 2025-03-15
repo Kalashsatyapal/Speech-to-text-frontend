@@ -19,19 +19,31 @@ export default function App() {
 
   const fetchPreviousTranscriptions = async () => {
     try {
-      const response = await axios.get("https://speech-to-text-backend-git-main-kalash-satyapals-projects.vercel.app/transcriptions");
+      const response = await axios.get(
+        "https://speech-to-text-backend-git-main-kalash-satyapals-projects.vercel.app/transcriptions"
+      );
       setPreviousTranscriptions(response.data);
     } catch (error) {
       console.error("Error fetching transcriptions:", error);
-      alert("⚠️ Failed to fetch previous transcriptions. Please try again later.");
+      alert(
+        "⚠️ Failed to fetch previous transcriptions. Please try again later."
+      );
     }
   };
 
   const validateFile = (file) => {
-    const validTypes = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp3", "audio/x-wav"];
+    const validTypes = [
+      "audio/mpeg",
+      "audio/wav",
+      "audio/ogg",
+      "audio/mp3",
+      "audio/x-wav",
+    ];
     console.log("File Type:", file.type); // Debugging
     if (!validTypes.includes(file.type)) {
-      alert(`⚠️ Invalid file type: ${file.type}. Please upload an MP3, WAV, or OGG file.`);
+      alert(
+        `⚠️ Invalid file type: ${file.type}. Please upload an MP3, WAV, or OGG file.`
+      );
       return false;
     }
     return true;
@@ -48,10 +60,10 @@ export default function App() {
 
   const uploadFile = async () => {
     if (!file) return alert("Please select a valid audio file");
-  
+
     const formData = new FormData();
     formData.append("audio", file);
-  
+
     try {
       setLoading(true);
       const response = await axios.post(
@@ -59,16 +71,22 @@ export default function App() {
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-  
+
       setTranscription(response.data.transcription);
       fetchPreviousTranscriptions();
     } catch (error) {
       console.error("Upload error:", error);
-  
+
       if (error.response) {
-        alert(`⚠️ Server error: ${error.response.data.message || "Failed to transcribe audio"}`);
+        alert(
+          `⚠️ Server error: ${
+            error.response.data.message || "Failed to transcribe audio"
+          }`
+        );
       } else if (error.request) {
-        alert("⚠️ No response from the server. Please check your internet connection.");
+        alert(
+          "⚠️ No response from the server. Please check your internet connection."
+        );
       } else {
         alert("⚠️ An unknown error occurred.");
       }
@@ -119,10 +137,10 @@ export default function App() {
 
   const uploadRecordedAudio = async () => {
     if (!recordedAudio) return alert("No recorded audio available");
-  
+
     const formData = new FormData();
     formData.append("audio", recordedAudio, "recorded_audio.wav");
-  
+
     try {
       setLoading(true);
       const response = await axios.post(
@@ -130,27 +148,35 @@ export default function App() {
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-  
+
       setTranscription(response.data.transcription);
       fetchPreviousTranscriptions();
     } catch (error) {
       console.error("Recording upload error:", error);
-  
+
       if (error.response) {
-        alert(`⚠️ Server error: ${error.response.data.message || "Failed to transcribe audio"}`);
+        alert(
+          `⚠️ Server error: ${
+            error.response.data.message || "Failed to transcribe audio"
+          }`
+        );
       } else if (error.request) {
-        alert("⚠️ No response from the server. Please check your internet connection.");
+        alert(
+          "⚠️ No response from the server. Please check your internet connection."
+        );
       } else {
         alert("⚠️ An unknown error occurred.");
       }
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   const deleteTranscription = async (id) => {
     try {
-      await axios.delete(`https://speech-to-text-backend-git-main-kalash-satyapals-projects.vercel.app/transcriptions/${id}`);
+      await axios.delete(
+        `https://speech-to-text-backend-git-main-kalash-satyapals-projects.vercel.app/transcriptions/${id}`
+      );
       fetchPreviousTranscriptions();
     } catch (error) {
       console.error("Error deleting transcription:", error);
@@ -231,32 +257,78 @@ export default function App() {
                   >
                     ❌ Reset
                   </button>
+
+                  {/* Download Button */}
+                  <a
+                    href={audioURL}
+                    download="recorded_audio.wav"
+                    className="flex-1 bg-black text-white px-6 py-3 rounded-lg shadow-md hover:scale-105 transition-all duration-300"
+                  >
+                    ⬇️ Download Audio
+                  </a>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-       {/* Right Panel */}
-       <div className="w-full md:w-1/2 bg-white/20 backdrop-blur-lg text-white p-6 rounded-xl shadow-lg flex flex-col gap-4">
-          <h2 className="text-3xl font-bold text-center">📝 Transcription Result</h2>
-          {loading && <p className="text-lg bg-yellow-300 text-black px-4 py-2 rounded-md shadow-md text-center">⏳ Transcribing audio...</p>}
+        {/* Right Panel */}
+        {/* Transcription Result */}
+        <div className="w-full md:w-1/2 bg-white/20 backdrop-blur-lg text-white p-6 rounded-xl shadow-lg flex flex-col gap-4">
+          <h2 className="text-3xl font-bold text-center">
+            📝 Transcription Result
+          </h2>
+
+          {loading && (
+            <p className="text-lg bg-yellow-300 text-black px-4 py-2 rounded-md shadow-md text-center">
+              ⏳ Transcribing audio...
+            </p>
+          )}
+
           <div className="p-4 bg-gray-100 text-black rounded-lg shadow-md overflow-y-auto max-h-60 min-h-[150px]">
-            {transcription ? <p className="text-lg leading-relaxed">{transcription}</p> : <p className="text-gray-500 text-center">No transcription available yet.</p>}
+            {transcription ? (
+              <p className="text-lg leading-relaxed">{transcription}</p>
+            ) : (
+              <p className="text-gray-500 text-center">
+                No transcription available yet.
+              </p>
+            )}
           </div>
 
+          {/* Reset Button */}
+          <button
+            onClick={() => setTranscription("")}
+            className="w-full bg-red-600 text-white px-6 py-3 rounded-lg shadow-md hover:scale-105 transition-all duration-300"
+          >
+            ❌ Reset Transcription
+          </button>
+
           {/* Transcription History */}
-          <h2 className="text-xl font-bold text-center mt-4">📜 Previous Transcriptions</h2>
+          <h2 className="text-xl font-bold text-center mt-4">
+            📜 Previous Transcriptions
+          </h2>
           <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto">
             {previousTranscriptions.length > 0 ? (
               previousTranscriptions.map((item) => (
-                <div key={item.id} className="p-4 bg-white text-black rounded-lg shadow-md flex justify-between items-center">
-                  <p className="text-lg leading-relaxed">{item.transcription}</p>
-                  <button onClick={() => deleteTranscription(item.id)} className="text-red-500 hover:text-red-700">❌</button>
+                <div
+                  key={item.id}
+                  className="p-4 bg-white text-black rounded-lg shadow-md flex justify-between items-center"
+                >
+                  <p className="text-lg leading-relaxed">
+                    {item.transcription}
+                  </p>
+                  <button
+                    onClick={() => deleteTranscription(item.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ❌
+                  </button>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center">No previous transcriptions found.</p>
+              <p className="text-gray-500 text-center">
+                No previous transcriptions found.
+              </p>
             )}
           </div>
         </div>
