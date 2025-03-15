@@ -19,7 +19,7 @@ export default function App() {
 
   const fetchPreviousTranscriptions = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/transcriptions");
+      const response = await axios.get("https://speech-to-text-backend-git-main-kalash-satyapals-projects.vercel.app/transcriptions");
       setPreviousTranscriptions(response.data);
     } catch (error) {
       console.error("Error fetching transcriptions:", error);
@@ -55,7 +55,7 @@ export default function App() {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:5000/transcribe",
+        "https://speech-to-text-backend-git-main-kalash-satyapals-projects.vercel.app/transcribe",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -126,7 +126,7 @@ export default function App() {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:5000/transcribe",
+        "https://speech-to-text-backend-git-main-kalash-satyapals-projects.vercel.app/transcribe",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -150,7 +150,7 @@ export default function App() {
 
   const deleteTranscription = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/transcriptions/${id}`);
+      await axios.delete(`https://speech-to-text-backend-git-main-kalash-satyapals-projects.vercel.app/transcriptions/${id}`);
       fetchPreviousTranscriptions();
     } catch (error) {
       console.error("Error deleting transcription:", error);
